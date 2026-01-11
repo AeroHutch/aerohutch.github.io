@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mini Minecraft (HTML)</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #87ceeb;
+      font-family: sans-serif;
+      user-select: none;
+    }
+    #ui {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.5);
+      color: white;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background: #87ceeb;
+    }
+  </style>
+</head>
+<body>
+  <div id="ui">
+    WASD / Arrows: Move<br>
+    Space: Jump<br>
+    Left click: Break block<br>
+    Right click: Place block<br>
+    1–6: Select block
+  </div>
+
+  <canvas id="game" width="800" height="480"></canvas>
+
+  <script>
+// ================= STABLE MINI MINECRAFT ENGINE =================
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const TILE = 32;
+const WORLD_W = 120;
+const WORLD_H = 40;
+
+const blocks = {
+  air: 0,
+  grass: 1,
+  dirt: 2,
+  stone: 3,
+  log_oak: 4,
+  planks_oak: 5,
+  leaves_oak: 6
+};
+
+// -------- TEXTURE LOADING (SAFE) --------
+const textures = {};
+const textureSources = {
+  [blocks.grass]: "textures/grass_side.png",
+  [blocks.dirt]: "textures/dirt.png",
+  [blocks.stone]: "textures/stone.png",
+  [blocks.log_oak]: "textures/log_oak.png",
+  [blocks.planks_oak]: "textures/planks_oak.png",
+  [blocks.leaves_oak]: "textures/leaves_oak.png",
+};
+
+let allTexturesReady = false;
+let loadedCount = 0;
+const totalTextures = Object.keys(textureSources).length;
+
+for (const id in textureSources) {
+  const img = new Image();
+  img.onload = () => {
+    loadedCount++;
+    if (loadedCount === totalTextures) allTexturesReady = true;
+  };
+  img.onerror = () => {
+    console.warn("Failed to load texture:", textureSources[id]);
+    loadedCount++;
+    if (loadedCount === totalTextures) allTexturesReady = true;
+  };
+  img.src = textureSources[id];
+  textures[id] = img;
+}
+
+// -------- WORLD --------
+const world = Array.from({length:WORLD_H},(_,y)=>
+  Array.from({length:WORLD_W},()=>{
+    if(y>25) return blocks.stone;
+    if(y===25) return blocks.grass;
+    if(y>22) return blocks.dirt;
+    return blocks.air;
+  })
+);
+
+// -------- PLAYER --------
+const player = { x:10, y:5, vx:0, vy:0, w:0.8, h:0.9, onGround:false };
+
+// -------- CAMERA --------
+const camera = { x:0, y:0 };
+
+// -------- INPUT --------
+const keys = {};
+addEventListener("keydown", e => keys[e.key] = true);
+addEventListener("keyup", e => keys[e.key] = false);
+
+// -------- UTILS --------
+const solid = (x,y) => world[y] && world[y][x] && world[y][x] !== blocks.air;
+
+// -------- INVENTORY --------
+const hotbar = [
+  blocks.grass,
+  blocks.dirt,
+  blocks.stone,
+  blocks.log_oak,
+  blocks.planks_oak,
+  blocks.leaves_oak
+];
+let selected = 0;
+addEventListener("keydown", e => {
+  if (e.key >= 1 && e.key <= hotbar.length) selected = e.key - 1;
+});
+
+canvas.oncontextmenu = e => e.preventDefault();
+canvas.onmousedown = e => {
+  const r = canvas.getBoundingClientRect();
+  const x = Math.floor((e.clientX - r.left) / TILE + camera.x);
+  const y = Math.floor((e.clientY - r.top) / TILE + camera.y);
+  if (!world[y] || x < 0 || y < 0) return;
+  if (e.button === 0) world[y][x] = blocks.air;
+  if (e.button === 2) world[y][x] = hotbar[selected];
+};
+
+// -------- ENEMY --------
+const mob = { x:30, y:5, vx:0.02 };
+
+function update(dt) {
+  const g = 0.0018 * dt;
+  const a = 0.002 * dt;
+
+  if (keys.a || keys.ArrowLeft) player.vx -= a;
+  if (keys.d || keys.ArrowRight) player.vx += a;
+  if ((keys.w || keys.ArrowUp || keys[" "]) && player.onGround) {
+    player.vy = -0.45;
+    player.onGround = false;
+  }
+
+  player.vy += g;
+
+  // X collision
+  player.x += player.vx;
+  if (solid(Math.floor(player.x), Math.floor(player.y)) ||
+      solid(Math.floor(player.x + player.w), Math.floor(player.y))) {
+    player.x -= player.vx;
+    player.vx = 0;
+  }
+
+  // Y collision
+  player.y += player.vy;
+  if (solid(Math.floor(player.x), Math.floor(player.y + player.h))) {
+    player.y = Math.floor(player.y + player.h) - player.h;
+    player.vy = 0;
+    player.onGround = true;
+  }
+
+  player.vx *= 0.85;
+
+  // Mob AI
+  mob.x += mob.vx;
+  if (solid(Math.floor(mob.x + 1), Math.floor(mob.y + 1)) ||
+      solid(Math.floor(mob.x - 1), Math.floor(mob.y + 1))) mob.vx *= -1;
+
+  camera.x = Math.max(0, player.x - canvas.width / TILE / 2);
+  camera.y = Math.max(0, player.y - canvas.height / TILE / 2);
+}
+
+function drawBlock(id, x, y) {
+  const img = textures[id];
+  if (img && img.complete && img.naturalWidth > 0) {
+    ctx.drawImage(img, x, y, TILE, TILE);
+  } else {
+    ctx.fillStyle = "magenta";
+    ctx.fillRect(x, y, TILE, TILE);
+  }
+}
+
+function draw() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const sx = Math.floor(camera.x);
+  const sy = Math.floor(camera.y);
+  const ex = sx + canvas.width / TILE + 1;
+  const ey = sy + canvas.height / TILE + 1;
+
+  for (let y = sy; y < ey; y++) {
+    for (let x = sx; x < ex; x++) {
+      if (world[y] && world[y][x]) {
+        drawBlock(world[y][x], (x - camera.x) * TILE, (y - camera.y) * TILE);
+      }
+    }
+  }
+
+  // Player
+  ctx.fillStyle = "red";
+  ctx.fillRect((player.x - camera.x) * TILE, (player.y - camera.y) * TILE,
+               player.w * TILE, player.h * TILE);
+
+  // Mob
+  ctx.fillStyle = "purple";
+  ctx.fillRect((mob.x - camera.x) * TILE, (mob.y - camera.y) * TILE, TILE, TILE);
+
+  // Hotbar
+  hotbar.forEach((b, i) => {
+    ctx.strokeStyle = i === selected ? "yellow" : "black";
+    ctx.strokeRect(10 + i * 36, 440, 32, 32);
+    if (allTexturesReady) drawBlock(b, 10 + i * 36, 440);
+  });
+}
+
+let last = performance.now();
+(function loop(t) {
+  const dt = t - last;
+  last = t;
+  update(dt);
+  draw();
+  requestAnimationFrame(loop);
+})(last);
+</script>
+</body>
+</html>
