@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JS Craft | The Ultimate Browser Sandbox</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;700&display=swap');
+        
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .pixel-font {
+            font-family: 'Press+Start+2P', cursive;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            background: #000;
+            border: 4px solid #334155;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .game-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glow:hover {
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Navigation -->
+    <nav class="p-6 flex justify-between items-center glass sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-green-500 rounded flex items-center justify-center text-2xl shadow-[4px_4px_0px_0px_rgba(34,197,94,0.3)]">🌿</div>
+            <h1 class="pixel-font text-lg tracking-tighter text-green-400">JS CRAFT</h1>
+        </div>
+        <div class="hidden md:flex gap-8 font-bold text-sm uppercase tracking-widest text-slate-400">
+            <a href="#" class="hover:text-white transition-colors">World</a>
+            <a href="#" class="hover:text-white transition-colors">Crafting</a>
+            <a href="#" class="hover:text-white transition-colors">Skins</a>
+            <a href="#" class="text-sky-400">Play Now</a>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-4 gap-8">
+        
+        <!-- Left Sidebar: Controls -->
+        <div class="lg:col-span-1 space-y-6">
+            <div class="glass p-6 rounded-xl">
+                <h2 class="pixel-font text-xs mb-6 text-sky-400">INPUT_LOG</h2>
+                <ul class="space-y-4 text-sm">
+                    <li class="flex justify-between items-center border-b border-slate-700 pb-2">
+                        <span class="text-slate-400">Move</span>
+                        <span class="bg-slate-800 px-2 py-1 rounded font-mono text-white">WASD</span>
+                    </li>
+                    <li class="flex justify-between items-center border-b border-slate-700 pb-2">
+                        <span class="text-slate-400">Jump</span>
+                        <span class="bg-slate-800 px-2 py-1 rounded font-mono text-white">SPACE</span>
+                    </li>
+                    <li class="flex justify-between items-center border-b border-slate-700 pb-2">
+                        <span class="text-slate-400">Break Block</span>
+                        <span class="bg-slate-800 px-2 py-1 rounded font-mono text-white">L-CLICK</span>
+                    </li>
+                    <li class="flex justify-between items-center border-b border-slate-700 pb-2">
+                        <span class="text-slate-400">Place Block</span>
+                        <span class="bg-slate-800 px-2 py-1 rounded font-mono text-white">R-CLICK</span>
+                    </li>
+                    <li class="flex justify-between items-center border-b border-slate-700 pb-2">
+                        <span class="text-slate-400">Inventory</span>
+                        <span class="bg-slate-800 px-2 py-1 rounded font-mono text-white">1-5</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="glass p-6 rounded-xl glow cursor-pointer">
+                <h3 class="font-bold text-green-400 mb-2">v1.12.2 Textures Active</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">Experience the classic aesthetic with high-performance 16x16 pixel mapping.</p>
+            </div>
+        </div>
+
+        <!-- Center: Game Embed -->
+        <div class="lg:col-span-3 space-y-6">
+            <div class="game-container">
+                <!-- Replace with your actual game file path -->
+                <iframe src="minecraft_clone.html" title="JS Craft Game View"></iframe>
+            </div>
+
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 py-4">
+                <div>
+                    <h2 class="text-3xl font-bold">Infinite Sandbox World</h2>
+                    <p class="text-slate-400 mt-1">Procedural terrain generation with biome-inspired heightmaps.</p>
+                </div>
+                <div class="flex gap-4">
+                    <button class="bg-sky-500 hover:bg-sky-400 text-white px-8 py-3 rounded-lg font-bold transition-all shadow-[0_4px_20px_rgba(14,165,233,0.4)]">
+                        Full Screen
+                    </button>
+                    <button class="glass px-8 py-3 rounded-lg font-bold hover:bg-slate-700 transition-all">
+                        Reset World
+                    </button>
+                </div>
+            </div>
+
+            <!-- Features Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+                <div class="bg-slate-800/50 p-6 rounded-xl">
+                    <div class="text-2xl mb-4">🌳</div>
+                    <h4 class="font-bold mb-2">Flora System</h4>
+                    <p class="text-sm text-slate-400">Randomized oak tree generation with trunk and leaf logic.</p>
+                </div>
+                <div class="bg-slate-800/50 p-6 rounded-xl">
+                    <div class="text-2xl mb-4">🧱</div>
+                    <h4 class="font-bold mb-2">Physics Engine</h4>
+                    <p class="text-sm text-slate-400">Advanced AABB collision detection on all three axes.</p>
+                </div>
+                <div class="bg-slate-800/50 p-6 rounded-xl">
+                    <div class="text-2xl mb-4">🚀</div>
+                    <h4 class="font-bold mb-2">Fast Rendering</h4>
+                    <p class="text-sm text-slate-400">Optimized Three.js pipeline using NearestFilter textures.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="mt-20 py-10 border-t border-slate-800 text-center text-slate-500 text-sm">
+        <p class="pixel-font text-[10px] mb-4 text-slate-600 uppercase">Built with JavaScript & Three.js</p>
+        <p>&copy; 2026 JS Craft Project. All textures property of Mojang Synergies AB.</p>
+    </footer>
+
+</body>
+</html>
